@@ -5,6 +5,7 @@ frontend/dist/
 data/*.db
 data/uploads/*
 !data/uploads/.gitkeep
+data/config/*.properties
 !data/config/.gitkeep
 !**/src/main/**/target/
 !**/src/test/**/target/

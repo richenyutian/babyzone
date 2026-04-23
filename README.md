@@ -70,3 +70,84 @@
 - `record_id`
 - `file_path`
 - `file_name`
+
+## 6. 当前实现说明
+
+当前仓库已按以上 PRD 生成一个可运行的 MVP，包含：
+
+- Spring Boot 3 + Java 17 后端
+- SQLite 单文件数据库，默认位于 `data/baby-steps.db`
+- React + Tailwind CSS 前端
+- 本地磁盘图片存储，默认目录 `data/uploads/`
+- 简单管理员登录（基于配置文件初始化账号密码）
+- 首页成长统计、时间轴展示、Markdown 文本记录、多图上传
+- Docker / Docker Compose 一键启动
+
+### 初始化配置
+
+首次启动时，系统会自动创建配置文件：
+
+- `data/config/app-config.properties`
+
+默认配置项包括：
+
+- `baby.name`
+- `baby.birthday`
+- `admin.username`
+- `admin.password`
+
+你可以修改该文件来自定义宝宝姓名、生日和管理员账号密码。
+
+### 本地开发
+
+前端：
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+后端：
+
+```bash
+./mvnw spring-boot:run
+```
+
+默认情况下：
+
+- 前端开发服务运行在 `http://localhost:5173`
+- 后端服务运行在 `http://localhost:8080`
+
+### 生产构建
+
+构建前端：
+
+```bash
+cd frontend
+npm run build
+```
+
+构建后端：
+
+```bash
+./mvnw package
+```
+
+构建完成后可运行：
+
+```bash
+java -jar target/baby-steps-0.0.1-SNAPSHOT.jar
+```
+
+### Docker 启动
+
+```bash
+docker compose up --build
+```
+
+启动后访问：
+
+- `http://localhost:8080`
+
+所有数据库、配置和图片文件都保存在项目根目录的 `data/` 下，便于整体迁移与备份。

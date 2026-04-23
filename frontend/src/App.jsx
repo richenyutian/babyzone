@@ -339,7 +339,7 @@ function App() {
     }
   }
 
-  const bootstrap = async () => {
+  const refreshData = async () => {
     setBusy(true)
     setError('')
     try {
@@ -352,7 +352,18 @@ function App() {
   }
 
   useEffect(() => {
-    bootstrap()
+    const initialize = async () => {
+      setError('')
+      try {
+        await Promise.all([loadHome(), loadAuth()])
+      } catch (bootstrapError) {
+        setError(bootstrapError.message)
+      } finally {
+        setBusy(false)
+      }
+    }
+
+    initialize()
   }, [])
 
   const handleLogin = async (event) => {
@@ -427,7 +438,7 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-        <Header home={home} auth={auth} onRefresh={bootstrap} onLogout={handleLogout} />
+        <Header home={home} auth={auth} onRefresh={refreshData} onLogout={handleLogout} />
         <LoginCard
           auth={auth}
           loginForm={loginForm}
