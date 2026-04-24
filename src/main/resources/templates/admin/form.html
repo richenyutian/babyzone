@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? '编辑文章' : '发布文章'}">发布文章</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vditor@3.10.5/dist/index.min.css" />
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-semibold mb-6" th:text="${isEdit ? '编辑文章' : '发布文章'}">发布文章</h1>
+    <form method="post" th:action="${isEdit} ? @{'/admin/posts/' + ${post.id}} : @{/admin/posts}" class="space-y-6">
+        <div>
+            <label class="block text-sm mb-2">标题</label>
+            <input name="title" th:value="${post.title}" required class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-white" />
+        </div>
+        <div>
+            <label class="block text-sm mb-2">分类</label>
+            <select name="category" class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-white">
+                <option value="snippets" th:selected="${post.category == 'snippets'}">片言只语</option>
+                <option value="essays" th:selected="${post.category == 'essays'}">娓娓道来</option>
+                <option value="notes" th:selected="${post.category == 'notes'}">记事成册</option>
+                <option value="dev-log" th:selected="${post.category == 'dev-log'}">编程日志</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm mb-2">Markdown 内容</label>
+            <textarea id="mdContent" name="markdownContent" class="hidden" th:text="${post.markdownContent}"></textarea>
+            <div id="vditor" class="bg-white"></div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="px-5 py-2 rounded-lg bg-slate-900 text-white" th:text="${isEdit ? '保存修改' : '发布'}">发布</button>
+            <a href="/admin" class="px-5 py-2 rounded-lg border border-slate-300 bg-white">返回列表</a>
+        </div>
+    </form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/vditor@3.10.5/dist/index.min.js"></script>
+<script>
+    const textarea = document.getElementById('mdContent');
+    const editor = new Vditor('vditor', {
+        height: 460,
+        value: textarea.value || '',
+        placeholder: '写点什么吧...',
+        mode: 'ir',
+        cache: { enable: false },
+        input(value) {
+            textarea.value = value;
+        },
+        upload: {
+            url: '/admin/upload',
+            fieldName: 'file',
+            format(files, responseText) {
+                const resp = JSON.parse(responseText);
+                if (resp.code !== 0) {
+                    return JSON.stringify({msg: resp.msg || '上传失败', code: 1, data: {errFiles: [files[0].name], succMap: {}}});
+                }
+                return JSON.stringify({
+                    msg: '',
+                    code: 0,
+                    data: {
+                        errFiles: [],
+                        succMap: {
+                            [files[0].name]: resp.data.url
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>
+</body>
+</html>

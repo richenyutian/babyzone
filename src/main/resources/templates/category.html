@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${categoryLabel + ' - 分类页'}">分类页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-semibold mb-4" th:text="${categoryLabel}">分类</h1>
+
+    <form method="get" th:action="@{|/category/${categorySlug}|}" class="mb-6">
+        <div class="flex gap-2">
+            <input name="q" th:value="${q}" placeholder="在当前分类中搜索..." class="flex-1 border border-slate-300 rounded-lg px-4 py-2 bg-white" />
+            <button class="px-4 py-2 rounded-lg bg-slate-900 text-white">搜索</button>
+        </div>
+    </form>
+
+    <div class="space-y-4">
+        <article th:each="post : ${postPage.content}" class="bg-white border border-slate-200 rounded-xl p-6">
+            <div class="text-sm text-slate-500 mb-2" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</div>
+            <h2 class="text-xl font-semibold">
+                <a th:href="@{|/post/${post.id}|}" th:text="${post.title}">标题</a>
+            </h2>
+        </article>
+        <p th:if="${postPage.totalElements == 0}" class="text-slate-500">该分类还没有文章。</p>
+    </div>
+
+    <div th:if="${postPage.totalPages > 1}" class="mt-8 flex items-center justify-center gap-2 text-sm">
+        <a th:if="${postPage.number > 0}" th:href="@{|/category/${categorySlug}|(page=${postPage.number-1},size=${size},q=${q})}" class="px-3 py-1.5 rounded border border-slate-300 bg-white">上一页</a>
+        <span class="px-3 py-1.5" th:text="${postPage.number + 1 + ' / ' + postPage.totalPages}">1 / 1</span>
+        <a th:if="${postPage.number + 1 < postPage.totalPages}" th:href="@{|/category/${categorySlug}|(page=${postPage.number+1},size=${size},q=${q})}" class="px-3 py-1.5 rounded border border-slate-300 bg-white">下一页</a>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="bg-white/90 border-b border-gray-200 sticky top-0 z-40">
+    <nav class="max-w-5xl mx-auto px-4 py-3">
+        <div class="flex items-center justify-between">
+            <a th:href="@{/}" class="text-gray-800 font-semibold tracking-wide">Babyzone Blog</a>
+
+            <button id="menuToggle" class="md:hidden text-gray-700" type="button" aria-label="切换菜单">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+
+            <ul class="hidden md:flex items-center gap-8 text-gray-700 tracking-wide text-sm">
+                <li><a th:href="@{/}" class="hover:text-black transition">首页</a></li>
+
+                <li class="relative group">
+                    <span class="cursor-pointer hover:text-black transition">韶华如烟</span>
+                    <ul class="absolute left-0 top-full mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200">
+                        <li><a th:href="@{/category/snippets}" class="block px-4 py-2 hover:bg-gray-50">片言只语</a></li>
+                        <li><a th:href="@{/category/essays}" class="block px-4 py-2 hover:bg-gray-50">娓娓道来</a></li>
+                    </ul>
+                </li>
+
+                <li class="relative group">
+                    <span class="cursor-pointer hover:text-black transition">码海拾贝</span>
+                    <ul class="absolute left-0 top-full mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200">
+                        <li><a th:href="@{/category/notes}" class="block px-4 py-2 hover:bg-gray-50">记事成册</a></li>
+                        <li><a th:href="@{/category/dev-log}" class="block px-4 py-2 hover:bg-gray-50">编程日志</a></li>
+                    </ul>
+                </li>
+
+                <li><a th:href="@{/about}" class="hover:text-black transition">关于</a></li>
+            </ul>
+        </div>
+
+        <ul id="mobileMenu" class="md:hidden hidden mt-3 flex-col gap-2 text-sm text-gray-700">
+            <li><a th:href="@{/}" class="block py-1">首页</a></li>
+            <li class="pt-2 text-gray-900 font-medium">韶华如烟</li>
+            <li><a th:href="@{/category/snippets}" class="block py-1 pl-3">片言只语</a></li>
+            <li><a th:href="@{/category/essays}" class="block py-1 pl-3">娓娓道来</a></li>
+            <li class="pt-2 text-gray-900 font-medium">码海拾贝</li>
+            <li><a th:href="@{/category/notes}" class="block py-1 pl-3">记事成册</a></li>
+            <li><a th:href="@{/category/dev-log}" class="block py-1 pl-3">编程日志</a></li>
+            <li class="pt-2"><a th:href="@{/about}" class="block py-1">关于</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (menuToggle && mobileMenu) {
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+</script>
+</body>
+</html>
