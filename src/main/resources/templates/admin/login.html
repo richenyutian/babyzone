@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台登录 - Baby Steps</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="page-shell admin-shell">
+<div class="container narrow stack-lg">
+    <header class="stack-sm center-text">
+        <span class="eyebrow">Baby Steps Admin</span>
+        <h1>进入记录后台</h1>
+        <p class="muted">访客浏览地址与后台发布页已分离。登录后可在独立页面发布图文记录。</p>
+    </header>
+
+    <section class="card stack-md">
+        <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <form class="stack-md" th:action="@{/admin/login}" th:object="${loginForm}" method="post">
+            <label class="field-group">
+                <span>账号</span>
+                <input class="field" type="text" th:field="*{username}" placeholder="请输入管理员账号">
+                <small class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></small>
+            </label>
+            <label class="field-group">
+                <span>密码</span>
+                <input class="field" type="password" th:field="*{password}" placeholder="请输入管理员密码">
+                <small class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+            </label>
+            <div class="row between wrap gap-md">
+                <a class="button button-light" th:href="@{/}">返回访客页</a>
+                <button class="button button-primary" type="submit">登录后台</button>
+            </div>
+        </form>
+    </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${home.babyName + ' 的成长相册'}">Baby Steps</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="page-shell">
+<div class="container stack-lg">
+    <header class="hero-card card stack-md">
+        <div class="row between wrap gap-md">
+            <div class="stack-sm max-text">
+                <span class="eyebrow">Baby Steps</span>
+                <h1 class="hero-title" th:text="${home.babyName + ' 的成长相册'}">成长相册</h1>
+                <p class="hero-text">去社交化、专注记录、数据自主。只保留最重要的照片、文字与时间。</p>
+            </div>
+            <div class="row wrap gap-sm actions-end">
+                <a class="button button-light"
+                   th:href="${authenticated} ? @{/admin/records/new} : @{/admin/login}"
+                   th:text="${authenticated ? '进入后台' : '管理员登录'}">管理员登录</a>
+            </div>
+        </div>
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">出生日期</span>
+                <strong class="stat-value" th:text="${home.birthDate}">2026-01-01</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">出生天数</span>
+                <strong class="stat-value" th:text="${home.daysSinceBirth + ' 天'}">100 天</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">当前月龄</span>
+                <strong class="stat-value" th:text="${home.currentAgeLabel}">3个月10天</strong>
+            </div>
+        </section>
+    </header>
+
+    <section class="stack-md">
+        <div class="row between wrap gap-md section-heading">
+            <div>
+                <h2>成长时光轴</h2>
+                <p class="muted">访客页面仅用于查看；发布记录请进入后台独立页面。</p>
+            </div>
+            <span class="pill" th:text="${home.records.size() + ' 条记录'}">0 条记录</span>
+        </div>
+
+        <div class="empty-state card" th:if="${#lists.isEmpty(home.records)}">
+            还没有成长记录，登录后台后就可以开始发布图文了。
+        </div>
+
+        <div class="timeline stack-md" th:if="${!#lists.isEmpty(home.records)}">
+            <article class="timeline-card card" th:each="record : ${home.records}">
+                <aside class="timeline-meta stack-xs">
+                    <span class="meta-date" th:text="${record.date}">2026-01-01</span>
+                    <span class="meta-age" th:text="${record.ageLabel}">1个月2天</span>
+                </aside>
+                <div class="timeline-content stack-md">
+                    <div class="tag-row" th:if="${!#lists.isEmpty(record.tags)}">
+                        <span class="pill" th:each="tag : ${record.tags}" th:text="${'#' + tag}">#第一次</span>
+                    </div>
+                    <div class="photo-grid" th:if="${!#lists.isEmpty(record.photos)}">
+                        <a class="photo-link" th:each="photo : ${record.photos}" th:href="${photo.url}" target="_blank" rel="noreferrer">
+                            <img th:src="${photo.url}" th:alt="${photo.fileName}">
+                        </a>
+                    </div>
+                    <div class="excerpt-box">
+                        <p th:text="${record.excerpt}">文字摘要</p>
+                    </div>
+                    <details class="details-card">
+                        <summary>展开全文</summary>
+                        <div class="markdown-body" th:utext="${record.renderedContentHtml}"></div>
+                    </details>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+</body>
+</html>
