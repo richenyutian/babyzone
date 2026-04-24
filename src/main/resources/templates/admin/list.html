@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-4xl mx-auto px-4 py-10">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold">文章管理</h1>
+        <a href="/admin/new" class="px-4 py-2 rounded-lg bg-slate-900 text-white">写文章</a>
+    </div>
+    <div class="space-y-3">
+        <article th:each="post : ${posts}" class="bg-white border border-slate-200 rounded-lg p-4">
+            <h2 class="font-medium" th:text="${post.title}">标题</h2>
+            <p class="text-sm text-slate-500 mt-1">
+                <span th:text="${post.categoryLabel}">分类</span>
+                <span class="mx-2">·</span>
+                <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</span>
+            </p>
+        </article>
+        <p th:if="${#lists.isEmpty(posts)}" class="text-slate-500">暂无文章。</p>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-3xl mx-auto px-4 py-12">
+    <section class="bg-white border border-slate-200 rounded-xl p-8 leading-8 text-slate-700">
+        <h1 class="text-2xl font-semibold mb-4">关于</h1>
+        <p>这是一个以极简风格构建的个人博客系统，使用 Spring Boot 3 + Thymeleaf + SQLite。</p>
+    </section>
+</main>
+</body>
+</html>

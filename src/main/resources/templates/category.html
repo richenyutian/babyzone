@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${categoryLabel + ' - 分类页'}">分类页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-semibold mb-6" th:text="${categoryLabel}">分类</h1>
+    <div class="space-y-4">
+        <article th:each="post : ${posts}" class="bg-white border border-slate-200 rounded-xl p-6">
+            <div class="text-sm text-slate-500 mb-2" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</div>
+            <h2 class="text-xl font-semibold">
+                <a th:href="@{|/post/${post.id}|}" th:text="${post.title}">标题</a>
+            </h2>
+        </article>
+        <p th:if="${#lists.isEmpty(posts)}" class="text-slate-500">该分类还没有文章。</p>
+    </div>
+</main>
+</body>
+</html>

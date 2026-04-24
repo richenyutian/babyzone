@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${post.title + ' - 文章详情'}">文章详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-3xl mx-auto px-4 py-10">
+    <article class="bg-white border border-slate-200 rounded-xl p-8">
+        <div class="text-sm text-slate-500 mb-3">
+            <span th:text="${post.categoryLabel}">分类</span>
+            <span class="mx-2">·</span>
+            <time th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</time>
+        </div>
+        <h1 class="text-3xl font-semibold mb-8" th:text="${post.title}">标题</h1>
+        <div class="prose prose-slate max-w-none" th:utext="${post.content}"></div>
+    </article>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-sql.min.js"></script>
+</body>
+</html>

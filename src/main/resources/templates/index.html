@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 极简博客</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; letter-spacing: .02em; }
+    </style>
+</head>
+<body class="bg-[#F9FAFB] text-[#333] min-h-screen">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="max-w-4xl mx-auto px-4 py-10">
+    <section class="space-y-4">
+        <article th:each="post : ${posts}" class="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-sm transition-shadow duration-300">
+            <div class="flex items-center justify-between text-sm text-slate-500 mb-2">
+                <span th:text="${post.categoryLabel}">分类</span>
+                <time th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</time>
+            </div>
+            <h2 class="text-xl font-semibold">
+                <a class="hover:text-slate-700" th:href="@{|/post/${post.id}|}" th:text="${post.title}">标题</a>
+            </h2>
+        </article>
+        <p th:if="${#lists.isEmpty(posts)}" class="text-slate-500">暂无文章，去后台发布第一篇吧。</p>
+    </section>
+</main>
+</body>
+</html>
