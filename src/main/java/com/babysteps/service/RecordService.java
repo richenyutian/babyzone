@@ -27,14 +27,16 @@ public class RecordService {
     private final StorageService storageService;
     private final SettingsService settingsService;
     private final AgeCalculator ageCalculator;
+    private final MarkdownService markdownService;
 
     public RecordService(RecordRepository recordRepository, PhotoRepository photoRepository, StorageService storageService,
-                         SettingsService settingsService, AgeCalculator ageCalculator) {
+                         SettingsService settingsService, AgeCalculator ageCalculator, MarkdownService markdownService) {
         this.recordRepository = recordRepository;
         this.photoRepository = photoRepository;
         this.storageService = storageService;
         this.settingsService = settingsService;
         this.ageCalculator = ageCalculator;
+        this.markdownService = markdownService;
     }
 
     public HomeResponse getHome() {
@@ -84,6 +86,7 @@ public class RecordService {
                 record.id(),
                 record.content(),
                 excerpt,
+                markdownService.renderHtml(record.content()),
                 record.date().toString(),
                 ageCalculator.formatAge(birthDate, record.date()),
                 tags,

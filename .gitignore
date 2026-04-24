@@ -1,7 +1,5 @@
 HELP.md
 target/
-frontend/node_modules/
-frontend/dist/
 data/*.db
 data/uploads/*
 !data/uploads/.gitkeep

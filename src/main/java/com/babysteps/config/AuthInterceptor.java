@@ -27,9 +27,21 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        String accept = request.getHeader("Accept");
+        boolean expectsHtml = accept != null && accept.contains(MediaType.TEXT_HTML_VALUE);
+        if (expectsHtml && !request.getRequestURI().startsWith("/api/")) {
+            response.sendRedirect(request.getContextPath() + "/admin/login");
+            return false;
+        }
+
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"message\":\"请先登录后台。\"}");
+        if (request.getRequestURI().startsWith("/api/")) {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write("{\"message\":\"请先登录后台。\"}");
+        } else {
+            response.setContentType(MediaType.TEXT_PLAIN_VALUE);
+            response.getWriter().write("请先登录后台。");
+        }
         return false;
     }
 }

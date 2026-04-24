@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布记录 - Baby Steps</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="page-shell admin-shell">
+<div class="container stack-lg">
+    <header class="card stack-md">
+        <div class="row between wrap gap-md">
+            <div class="stack-sm max-text">
+                <span class="eyebrow">Admin Workspace</span>
+                <h1>发布成长记录</h1>
+                <p class="muted">这是独立于访客页的后台发布地址。支持多图上传、标签、日期选择，以及 Markdown 所见即所得编辑预览。</p>
+            </div>
+            <div class="row wrap gap-sm actions-end">
+                <a class="button button-light" th:href="@{/}">查看访客页</a>
+                <form th:action="@{/admin/logout}" method="post">
+                    <button class="button button-primary" type="submit">退出后台</button>
+                </form>
+            </div>
+        </div>
+        <section class="stats-grid compact-stats">
+            <div class="stat-card">
+                <span class="stat-label">宝宝姓名</span>
+                <strong class="stat-value" th:text="${settings.babyName}">Little Baby</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">出生日期</span>
+                <strong class="stat-value" th:text="${settings.birthDate}">2026-01-01</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">管理员</span>
+                <strong class="stat-value" th:text="${settings.adminUsername}">admin</strong>
+            </div>
+        </section>
+    </header>
+
+    <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <section class="editor-layout">
+        <form class="card stack-md" th:action="@{/admin/records}" th:object="${recordForm}" method="post" enctype="multipart/form-data">
+            <div class="row between wrap gap-md section-heading">
+                <div>
+                    <h2>编辑器</h2>
+                    <p class="muted">左侧写 Markdown，右侧实时预览；工具栏可快速插入常用格式。</p>
+                </div>
+                <span class="pill">所见即所得</span>
+            </div>
+
+            <div class="toolbar" data-editor-toolbar>
+                <button type="button" data-prefix="# " data-suffix="" data-placeholder="标题">标题</button>
+                <button type="button" data-prefix="## " data-suffix="" data-placeholder="小标题">小标题</button>
+                <button type="button" data-prefix="**" data-suffix="**" data-placeholder="重点内容">加粗</button>
+                <button type="button" data-prefix="*" data-suffix="*" data-placeholder="强调内容">斜体</button>
+                <button type="button" data-prefix="- " data-suffix="" data-placeholder="列表项">列表</button>
+                <button type="button" data-prefix="> " data-suffix="" data-placeholder="这一刻想记住的话">引用</button>
+                <button type="button" data-prefix="![照片说明](" data-suffix=")" data-placeholder="https://example.com/image.jpg">图片链接</button>
+            </div>
+
+            <div class="editor-grid" data-markdown-editor>
+                <label class="field-group editor-panel">
+                    <span>Markdown 内容</span>
+                    <textarea id="markdown-input" class="field field-textarea markdown-input" th:field="*{content}" placeholder="今天发生了什么？可以写：&#10;&#10;# 第一次微笑&#10;&#10;今天终于拍到了一个特别安静的笑容。"></textarea>
+                    <small class="field-error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></small>
+                </label>
+                <div class="field-group editor-panel">
+                    <span>实时预览</span>
+                    <div id="markdown-preview" class="preview-panel markdown-body">开始输入 Markdown，右侧会实时显示预览。</div>
+                </div>
+            </div>
+
+            <div class="grid-two">
+                <label class="field-group">
+                    <span>记录日期</span>
+                    <input class="field" type="date" th:field="*{date}">
+                </label>
+                <label class="field-group">
+                    <span>标签分类</span>
+                    <input class="field" type="text" th:field="*{tags}" placeholder="第一次, 出游, 生病">
+                </label>
+            </div>
+
+            <label class="field-group">
+                <span>上传照片</span>
+                <input class="field" id="file-input" type="file" name="files" accept="image/*" multiple>
+                <small class="muted">支持单张或多张图片，文件将直接存储在服务器本地磁盘。</small>
+                <div id="file-list" class="file-list"></div>
+            </label>
+
+            <div class="row end wrap gap-sm">
+                <button class="button button-primary" type="submit">保存到时光轴</button>
+            </div>
+        </form>
+
+        <aside class="card stack-md sidebar-card">
+            <div class="section-heading">
+                <h2>最新记录</h2>
+                <p class="muted">发布后即可在访客页时光轴查看。</p>
+            </div>
+            <div class="stack-sm" th:if="${#lists.isEmpty(home.records)}">
+                <div class="empty-state soft">还没有记录，发布第一条吧。</div>
+            </div>
+            <div class="stack-sm" th:if="${!#lists.isEmpty(home.records)}">
+                <article class="mini-record" th:each="record, iter : ${home.records}" th:if="${iter.index < 5}">
+                    <div class="row between gap-sm">
+                        <strong th:text="${record.date}">2026-01-01</strong>
+                        <span class="pill" th:text="${record.ageLabel}">1个月2天</span>
+                    </div>
+                    <p th:text="${record.excerpt}">记录摘要</p>
+                </article>
+            </div>
+        </aside>
+    </section>
+</div>
+<script th:src="@{/js/admin-editor.js}"></script>
+</body>
+</html>

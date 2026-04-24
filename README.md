@@ -73,14 +73,16 @@
 
 ## 6. 当前实现说明
 
-当前仓库已按以上 PRD 生成一个可运行的 MVP，包含：
+当前仓库已按以上 PRD 生成一个可运行的 MVP，当前采用 **单体 Spring Boot** 方案，包含：
 
-- Spring Boot 3 + Java 17 后端
+- Spring Boot 3 + Java 17 单体应用
+- Thymeleaf 服务端页面渲染
 - SQLite 单文件数据库，默认位于 `data/baby-steps.db`
-- React + Tailwind CSS 前端
 - 本地磁盘图片存储，默认目录 `data/uploads/`
 - 简单管理员登录（基于配置文件初始化账号密码）
-- 首页成长统计、时间轴展示、Markdown 文本记录、多图上传
+- 访客首页 `/` 与后台发布页 `/admin/records/new` 分离
+- 首页成长统计、时间轴展示、Markdown 图文记录、多图上传
+- Markdown 编辑器工具栏 + 实时预览（所见即所得交互）
 - Docker / Docker Compose 一键启动
 
 ### 初始化配置
@@ -100,38 +102,21 @@
 
 ### 本地开发
 
-前端：
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-后端：
-
 ```bash
 ./mvnw spring-boot:run
 ```
 
 默认情况下：
 
-- 前端开发服务运行在 `http://localhost:5173`
-- 后端服务运行在 `http://localhost:8080`
+- 应用运行在 `http://localhost:8080`
+- 访客页为 `http://localhost:8080/`
+- 后台登录页为 `http://localhost:8080/admin/login`
+- 后台发布页为 `http://localhost:8080/admin/records/new`
 
 ### 生产构建
 
-构建前端：
-
 ```bash
-cd frontend
-npm run build
-```
-
-构建后端：
-
-```bash
-./mvnw package
+./mvnw clean package
 ```
 
 构建完成后可运行：

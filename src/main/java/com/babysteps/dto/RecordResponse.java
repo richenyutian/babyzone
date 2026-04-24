@@ -6,6 +6,7 @@ public record RecordResponse(
         long id,
         String content,
         String excerpt,
+        String renderedContentHtml,
         String date,
         String ageLabel,
         List<String> tags,
