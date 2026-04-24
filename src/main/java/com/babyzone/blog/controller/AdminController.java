@@ -3,6 +3,7 @@ package com.babyzone.blog.controller;
 import com.babyzone.blog.entity.Post;
 import com.babyzone.blog.service.PostService;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -101,26 +102,34 @@ public class AdminController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<Map<String, Object>> upload(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("code", 1, "msg", "文件为空"));
         }
-        Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
-        Files.createDirectories(uploadDir);
-        String ext = "";
-        String original = file.getOriginalFilename();
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf("."));
+        try {
+            Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
+            Files.createDirectories(uploadDir);
+            String ext = "";
+            String original = file.getOriginalFilename();
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf("."));
+            }
+            String filename = Instant.now().toEpochMilli() + "-" + UUID.randomUUID() + ext;
+            Path target = uploadDir.resolve(filename);
+            // 显式关闭上传输入流，避免 Windows 下临时文件句柄未释放。
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+            String url = "/uploads/" + filename;
+            return ResponseEntity.ok(Map.of(
+                    "code", 0,
+                    "msg", "上传成功",
+                    "data", Map.of("url", url)
+            ));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("code", 1, "msg", "上传失败: " + e.getMessage()));
         }
-        String filename = Instant.now().toEpochMilli() + "-" + UUID.randomUUID() + ext;
-        Path target = uploadDir.resolve(filename);
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-        String url = "/uploads/" + filename;
-        return ResponseEntity.ok(Map.of(
-                "code", 0,
-                "msg", "上传成功",
-                "data", Map.of("url", url)
-        ));
     }
 }
