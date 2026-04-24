@@ -2,13 +2,15 @@ package com.babyzone.blog.service;
 
 import com.babyzone.blog.entity.Post;
 import com.babyzone.blog.repository.PostRepository;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +24,24 @@ public class PostService {
     private final Parser markdownParser = Parser.builder().build();
     private final HtmlRenderer htmlRenderer = HtmlRenderer.builder().build();
 
-    public List<Post> findAll() {
-        return postRepository.findAllByOrderByCreatedAtDesc();
+    public Page<Post> findPage(int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), size);
+        if (keyword == null || keyword.isBlank()) {
+            return postRepository.findAllByOrderByCreatedAtDesc(pageable);
+        }
+        return postRepository.searchAll(keyword.trim(), pageable);
     }
 
-    public List<Post> findAllDesc() {
-        return postRepository.findAllByOrderByCreatedAtDesc();
+    public Page<Post> findCategoryPage(String category, int page, int size, String keyword) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), size);
+        if (keyword == null || keyword.isBlank()) {
+            return postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
+        }
+        return postRepository.searchByCategory(category, keyword.trim(), pageable);
     }
 
-    public List<Post> findByCategory(String category) {
-        return postRepository.findByCategoryOrderByCreatedAtDesc(category);
+    public Page<Post> findAdminPage(int page, int size, String keyword) {
+        return findPage(page, size, keyword);
     }
 
     public Optional<Post> findById(Long id) {
@@ -50,6 +60,33 @@ public class PostService {
                 .content(htmlContent)
                 .build();
         return postRepository.save(post);
+    }
+
+    @Transactional
+    public boolean updatePost(Long id, String title, String category, String markdownContent) {
+        Optional<Post> optionalPost = postRepository.findById(id);
+        if (optionalPost.isEmpty()) {
+            return false;
+        }
+        Node markdownNode = markdownParser.parse(markdownContent);
+        String htmlContent = htmlRenderer.render(markdownNode);
+        Post post = optionalPost.get();
+        post.setTitle(title);
+        post.setCategory(category);
+        post.setCategoryLabel(categoryLabel(category));
+        post.setMarkdownContent(markdownContent);
+        post.setContent(htmlContent);
+        postRepository.save(post);
+        return true;
+    }
+
+    @Transactional
+    public boolean deleteById(Long id) {
+        if (!postRepository.existsById(id)) {
+            return false;
+        }
+        postRepository.deleteById(id);
+        return true;
     }
 
     public String getUploadPath() {

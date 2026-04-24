@@ -13,9 +13,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,14 +35,22 @@ public class AdminController {
     private String uploadPath;
 
     @GetMapping
-    public String adminIndex(Model model) {
-        model.addAttribute("posts", postService.findAllDesc());
+    public String adminIndex(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String keyword,
+            Model model) {
+        Page<Post> postPage = postService.findAdminPage(page, size, keyword);
+        model.addAttribute("postPage", postPage);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("size", size);
         return "admin/list";
     }
 
     @GetMapping("/new")
     public String newPost(Model model) {
         model.addAttribute("post", new Post());
+        model.addAttribute("isEdit", false);
         return "admin/form";
     }
 
@@ -48,6 +58,45 @@ public class AdminController {
     public String createPost(@ModelAttribute Post post, RedirectAttributes redirectAttributes) {
         postService.createPost(post.getTitle(), post.getCategory(), post.getMarkdownContent());
         redirectAttributes.addFlashAttribute("success", "文章已发布");
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/posts/{id}/edit")
+    public String editPostPage(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        return postService.findById(id)
+                .map(post -> {
+                    model.addAttribute("post", post);
+                    model.addAttribute("isEdit", true);
+                    return "admin/form";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("error", "文章不存在");
+                    return "redirect:/admin";
+                });
+    }
+
+    @PostMapping("/posts/{id}")
+    public String updatePost(
+            @PathVariable Long id,
+            @ModelAttribute Post post,
+            RedirectAttributes redirectAttributes) {
+        boolean updated = postService.updatePost(id, post.getTitle(), post.getCategory(), post.getMarkdownContent());
+        if (!updated) {
+            redirectAttributes.addFlashAttribute("error", "文章不存在");
+        } else {
+            redirectAttributes.addFlashAttribute("success", "文章已更新");
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/posts/{id}/delete")
+    public String deletePost(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        boolean deleted = postService.deleteById(id);
+        if (!deleted) {
+            redirectAttributes.addFlashAttribute("error", "文章不存在");
+        } else {
+            redirectAttributes.addFlashAttribute("success", "文章已删除");
+        }
         return "redirect:/admin";
     }
 

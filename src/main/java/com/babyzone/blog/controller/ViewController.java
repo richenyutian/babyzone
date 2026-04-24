@@ -2,12 +2,13 @@ package com.babyzone.blog.controller;
 
 import com.babyzone.blog.entity.Post;
 import com.babyzone.blog.service.PostService;
-import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -21,17 +22,28 @@ public class ViewController {
     }
 
     @GetMapping("/")
-    public String index(Model model) {
-        List<Post> posts = postService.findAll();
-        model.addAttribute("posts", posts);
+    public String index(@RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "6") int size,
+                        @RequestParam(defaultValue = "") String q,
+                        Model model) {
+        Page<Post> postPage = postService.findPage(page, size, q);
+        model.addAttribute("postPage", postPage);
+        model.addAttribute("q", q);
+        model.addAttribute("size", size);
         model.addAttribute("pageTitle", "首页");
         return "index";
     }
 
     @GetMapping("/category/{slug}")
-    public String category(@PathVariable String slug, Model model) {
-        List<Post> posts = postService.findByCategory(slug);
-        model.addAttribute("posts", posts);
+    public String category(@PathVariable String slug,
+                           @RequestParam(defaultValue = "0") int page,
+                           @RequestParam(defaultValue = "6") int size,
+                           @RequestParam(defaultValue = "") String q,
+                           Model model) {
+        Page<Post> postPage = postService.findCategoryPage(slug, page, size, q);
+        model.addAttribute("postPage", postPage);
+        model.addAttribute("q", q);
+        model.addAttribute("size", size);
         model.addAttribute("categorySlug", slug);
         model.addAttribute("categoryLabel", categoryName(slug));
         model.addAttribute("pageTitle", categoryName(slug));

@@ -8,21 +8,50 @@
 </head>
 <body class="bg-[#F9FAFB] text-[#333] min-h-screen">
 <div th:replace="~{fragments/header :: header}"></div>
-<main class="max-w-4xl mx-auto px-4 py-10">
-    <div class="flex items-center justify-between mb-6">
+<main class="max-w-5xl mx-auto px-4 py-10">
+    <div class="flex flex-wrap gap-3 items-center justify-between mb-6">
         <h1 class="text-2xl font-semibold">文章管理</h1>
-        <a href="/admin/new" class="px-4 py-2 rounded-lg bg-slate-900 text-white">写文章</a>
+        <div class="flex items-center gap-2">
+            <form method="post" action="/admin/logout">
+                <button class="px-4 py-2 rounded-lg border border-slate-300 bg-white">退出</button>
+            </form>
+            <a href="/admin/new" class="px-4 py-2 rounded-lg bg-slate-900 text-white">写文章</a>
+        </div>
     </div>
+
+    <form method="get" action="/admin" class="mb-5">
+        <div class="flex gap-2">
+            <input name="keyword" th:value="${keyword}" placeholder="搜索标题或内容..." class="flex-1 border border-slate-300 rounded-lg px-4 py-2 bg-white" />
+            <button class="px-4 py-2 rounded-lg bg-slate-900 text-white">搜索</button>
+        </div>
+    </form>
+
     <div class="space-y-3">
-        <article th:each="post : ${posts}" class="bg-white border border-slate-200 rounded-lg p-4">
-            <h2 class="font-medium" th:text="${post.title}">标题</h2>
-            <p class="text-sm text-slate-500 mt-1">
-                <span th:text="${post.categoryLabel}">分类</span>
-                <span class="mx-2">·</span>
-                <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</span>
-            </p>
+        <article th:each="post : ${postPage.content}" class="bg-white border border-slate-200 rounded-lg p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h2 class="font-medium" th:text="${post.title}">标题</h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        <span th:text="${post.categoryLabel}">分类</span>
+                        <span class="mx-2">·</span>
+                        <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">时间</span>
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a class="px-3 py-1.5 rounded-lg border border-slate-300" th:href="@{|/admin/posts/${post.id}/edit|}">编辑</a>
+                    <form method="post" th:action="@{|/admin/posts/${post.id}/delete|}" onsubmit="return confirm('确定删除这篇文章吗？');">
+                        <button class="px-3 py-1.5 rounded-lg border border-red-200 text-red-500">删除</button>
+                    </form>
+                </div>
+            </div>
         </article>
-        <p th:if="${#lists.isEmpty(posts)}" class="text-slate-500">暂无文章。</p>
+        <p th:if="${postPage.totalElements == 0}" class="text-slate-500">暂无文章。</p>
+    </div>
+
+    <div th:if="${postPage.totalPages > 1}" class="mt-8 flex items-center justify-center gap-2 text-sm">
+        <a th:if="${postPage.number > 0}" th:href="@{/admin(page=${postPage.number-1},size=${size},keyword=${keyword})}" class="px-3 py-1.5 rounded border border-slate-300 bg-white">上一页</a>
+        <span class="px-3 py-1.5" th:text="${postPage.number + 1 + ' / ' + postPage.totalPages}">1 / 1</span>
+        <a th:if="${postPage.number + 1 < postPage.totalPages}" th:href="@{/admin(page=${postPage.number+1},size=${size},keyword=${keyword})}" class="px-3 py-1.5 rounded border border-slate-300 bg-white">下一页</a>
     </div>
 </main>
 </body>
