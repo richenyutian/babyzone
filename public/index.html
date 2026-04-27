@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>工单报表工具</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="layout">
+        <header class="header">
+          <div>
+            <h1>工单报表工具</h1>
+            <p>通过 SQL + API 规则，快速产出运维报表</p>
+          </div>
+          <el-tag type="success" size="small">Vue2 + Element UI2 + SQLite</el-tag>
+        </header>
+
+        <el-row :gutter="16">
+          <el-col :xs="24" :sm="24" :md="12" :lg="10">
+            <el-card shadow="never" class="card">
+              <div slot="header" class="card-header">
+                <span>API 配置</span>
+                <el-button type="primary" size="mini" @click="openApiDialog()">新增</el-button>
+              </div>
+
+              <el-table :data="apiConfigs" stripe border size="mini" v-loading="loading.apis">
+                <el-table-column prop="name" label="名称" min-width="140"></el-table-column>
+                <el-table-column prop="method" label="方法" width="70"></el-table-column>
+                <el-table-column label="地址" min-width="180">
+                  <template slot-scope="scope">
+                    <span>{{ scope.row.base_url }}{{ scope.row.path }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="130" fixed="right">
+                  <template slot-scope="scope">
+                    <el-button type="text" size="mini" @click="openApiDialog(scope.row)">编辑</el-button>
+                    <el-button type="text" size="mini" class="danger" @click="removeApi(scope.row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-card>
+          </el-col>
+
+          <el-col :xs="24" :sm="24" :md="12" :lg="14">
+            <el-card shadow="never" class="card">
+              <div slot="header" class="card-header">
+                <span>报表配置</span>
+                <el-button type="primary" size="mini" @click="openReportDialog()">新增</el-button>
+              </div>
+
+              <el-table :data="reportConfigs" stripe border size="mini" v-loading="loading.reports">
+                <el-table-column prop="name" label="报表名称" min-width="150"></el-table-column>
+                <el-table-column prop="report_type" label="类型" width="90"></el-table-column>
+                <el-table-column prop="api_name" label="数据 API" min-width="130"></el-table-column>
+                <el-table-column label="操作" width="160" fixed="right">
+                  <template slot-scope="scope">
+                    <el-button type="text" size="mini" @click="runReport(scope.row)">查看</el-button>
+                    <el-button type="text" size="mini" @click="openReportDialog(scope.row)">编辑</el-button>
+                    <el-button type="text" size="mini" class="danger" @click="removeReport(scope.row)">删除</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-card shadow="never" class="card report-view">
+          <div slot="header" class="card-header">
+            <span>报表查看</span>
+            <el-select
+              v-model="activeReportId"
+              filterable
+              placeholder="选择报表"
+              size="mini"
+              style="width: 260px"
+              @change="handleReportChange"
+            >
+              <el-option v-for="item in reportConfigs" :key="item.id" :value="item.id" :label="item.name"></el-option>
+            </el-select>
+          </div>
+
+          <div v-if="activeReportMeta" class="meta">
+            <el-tag size="mini" type="info">{{ activeReportMeta.report_type }}</el-tag>
+            <span class="meta-name">{{ activeReportMeta.name }}</span>
+            <span class="meta-desc">{{ activeReportMeta.description || "暂无描述" }}</span>
+          </div>
+
+          <div class="chart-container" v-loading="loading.run">
+            <div v-if="!activeReportMeta" class="empty-tip">请选择报表查看结果</div>
+
+            <template v-else>
+              <div v-show="activeReportMeta.report_type !== 'table'" id="chart" style="height: 360px"></div>
+
+              <el-table
+                v-if="activeReportMeta.report_type === 'table'"
+                :data="reportData.rows"
+                stripe
+                border
+                max-height="360"
+                size="mini"
+              >
+                <el-table-column
+                  v-for="column in tableColumns"
+                  :key="column.prop"
+                  :prop="column.prop"
+                  :label="column.label"
+                  min-width="130"
+                ></el-table-column>
+              </el-table>
+            </template>
+          </div>
+        </el-card>
+      </div>
+
+      <el-dialog :title="apiDialog.id ? '编辑 API' : '新增 API'" :visible.sync="apiDialog.visible" width="560px">
+        <el-form :model="apiDialog.form" label-width="90px" size="small">
+          <el-form-item label="名称">
+            <el-input v-model.trim="apiDialog.form.name" maxlength="40" />
+          </el-form-item>
+          <el-form-item label="Base URL">
+            <el-input v-model.trim="apiDialog.form.baseUrl" placeholder="http://127.0.0.1:3000" />
+          </el-form-item>
+          <el-form-item label="Path">
+            <el-input v-model.trim="apiDialog.form.path" placeholder="/api/data/query" />
+          </el-form-item>
+          <el-form-item label="请求方式">
+            <el-select v-model="apiDialog.form.method" style="width: 100%">
+              <el-option label="POST" value="POST"></el-option>
+              <el-option label="GET" value="GET"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Cookie">
+            <el-input v-model.trim="apiDialog.form.cookie" placeholder="session_id=demo" />
+          </el-form-item>
+          <el-form-item label="超时(ms)">
+            <el-input-number v-model="apiDialog.form.timeoutMs" :min="1000" :max="60000" style="width: 100%" />
+          </el-form-item>
+        </el-form>
+        <div slot="footer">
+          <el-button size="small" @click="apiDialog.visible = false">取消</el-button>
+          <el-button size="small" type="primary" @click="saveApi">保存</el-button>
+        </div>
+      </el-dialog>
+
+      <el-dialog :title="reportDialog.id ? '编辑报表' : '新增报表'" :visible.sync="reportDialog.visible" width="680px">
+        <el-form :model="reportDialog.form" label-width="100px" size="small">
+          <el-form-item label="报表名称">
+            <el-input v-model.trim="reportDialog.form.name" maxlength="50" />
+          </el-form-item>
+          <el-form-item label="报表类型">
+            <el-select v-model="reportDialog.form.reportType" style="width: 100%">
+              <el-option label="柱状图" value="bar"></el-option>
+              <el-option label="饼图" value="pie"></el-option>
+              <el-option label="表格" value="table"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="数据 API">
+            <el-select v-model="reportDialog.form.apiConfigId" style="width: 100%" filterable>
+              <el-option v-for="item in apiConfigs" :key="item.id" :label="item.name" :value="item.id"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="表头(逗号分隔)">
+            <el-input
+              v-model.trim="reportDialog.form.tableHeaders"
+              placeholder="例如：分类,数量"
+              maxlength="120"
+            />
+          </el-form-item>
+          <el-form-item label="SQL">
+            <el-input
+              type="textarea"
+              v-model.trim="reportDialog.form.sqlText"
+              :rows="5"
+              placeholder="仅支持 SELECT/CTE 查询"
+            />
+          </el-form-item>
+          <el-form-item label="说明">
+            <el-input type="textarea" v-model.trim="reportDialog.form.description" :rows="2" />
+          </el-form-item>
+        </el-form>
+        <div slot="footer">
+          <el-button size="small" @click="reportDialog.visible = false">取消</el-button>
+          <el-button size="small" type="primary" @click="saveReport">保存</el-button>
+        </div>
+      </el-dialog>
+    </div>
+
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
